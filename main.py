@@ -156,7 +156,14 @@ def transcribe_offline(audio_path, model_name, hotwords_str, device, use_itn, us
     return "识别失败"
 
 # --- 4. 构建 Gradio 界面 ---
-with gr.Blocks(title="FunASR 综合语音识别工具") as demo:
+custom_css = """
+#text_output textarea, #stream_output textarea {
+    height: 65vh !important;
+}
+footer { display: none !important; }
+"""
+
+with gr.Blocks(title="FunASR 综合语音识别工具", css=custom_css) as demo:
     gr.Markdown("# 🎙️ FunASR 实时/离线 语音识别")
 
     # 全局设置区域
@@ -181,7 +188,7 @@ with gr.Blocks(title="FunASR 综合语音识别工具") as demo:
                     hotwords_input = gr.Textbox(label="热词 (每行一个)", placeholder="阿里巴巴\n人工智能", lines=3)
                     submit_btn = gr.Button("开始识别", variant="primary")
                 with gr.Column():
-                    text_output = gr.Textbox(label="识别结果", lines=23, show_copy_button=True)
+                    text_output = gr.Textbox(label="识别结果", show_copy_button=True, elem_id="text_output")
 
         with gr.TabItem("实时语音识别"):
             gr.Markdown("实时模式使用 `paraformer-zh-streaming`。")
@@ -191,7 +198,7 @@ with gr.Blocks(title="FunASR 综合语音识别工具") as demo:
                     stream_input = gr.Audio(sources=["microphone"], streaming=True, label="麦克风输入")
                     clear_btn = gr.Button("清空记录")
                 with gr.Column():
-                    stream_output = gr.Textbox(label="实时识别内容", lines=23, show_copy_button=True)
+                    stream_output = gr.Textbox(label="实时识别内容", show_copy_button=True, elem_id="stream_output")
             
             stream_state = gr.State()
 
