@@ -135,7 +135,25 @@ def transcribe_offline(audio_path, model_name, hotwords_str, device, use_itn, us
     gen_kwargs = {"input": audio_path, "language": "auto", "use_itn": use_itn, "itn": use_itn, "hotwords": hotwords_list}
     res = model.generate(**gen_kwargs)
     
-    return res[0]["text"] if res else "识别失败"
+    if res:
+        result = res[0]
+        if use_speaker and "sentence_info" in result:
+            formatted_text = ""
+            last_spk = None
+            for item in result["sentence_info"]:
+                speaker_id = item.get("spk", "未知")
+                text = item['text']
+                if speaker_id != last_spk:
+                    if formatted_text:
+                        formatted_text += "\n\n"
+                    formatted_text += f"😀【{speaker_id}】{text}"
+                    last_spk = speaker_id
+                else:
+                    formatted_text += text
+            return formatted_text.strip()
+        return result.get("text", "无识别结果")
+    
+    return "识别失败"
 
 # --- 4. 构建 Gradio 界面 ---
 with gr.Blocks(title="FunASR 综合语音识别工具") as demo:
